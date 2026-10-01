@@ -1,0 +1,33 @@
+name = "rentrover-backend"
+main = "src/index.js"
+compatibility_date = "2026-09-01"
+compatibility_flags = ["nodejs_compat"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "rentrover"
+database_id = "REPLACE_WITH_REAL_D1_DATABASE_ID"
+
+# AI Gateway — Ask pane's grounded Q&A routes through this once it moves
+# off askEngine.js's rule-based matching. Not used by the scraper pipeline
+# itself (Laya and the extractors are plain HTTP calls / parsing, no LLM).
+[ai]
+binding = "AI"
+
+[vars]
+# Toggles the whole proxy layer between the mock and the real x402 client —
+# see src/proxy/credentials.ts. Flip to "real" once a funded wallet exists.
+PROXY_MODE = "mock"
+
+# HTTP endpoint for the Laya classifier (triage: real listing vs CAPTCHA/
+# block page, language id). Point this at wherever Laya ends up hosted —
+# see src/classify/laya.ts for the mock fallback used until then.
+LAYA_ENDPOINT = ""
+
+# How long a property record is trusted before the next request re-scrapes
+# it instead of serving the cached row.
+PROPERTY_TTL_MINUTES = "180"
+
+# How long an identical search query is served from search_cache before
+# re-running the scrape orchestrator for it.
+SEARCH_CACHE_TTL_MINUTES = "15"
