@@ -5,7 +5,7 @@
  */
 
 import { proxyFetch } from '../../proxy/fetch.js';
-import { classifyPage } from '../../classify/laya.js';
+import { diagnoseEmptyResult } from '../../classify/triage.js';
 import { buildSearchUrl } from './fetch.js';
 import { extractListings } from './extract.js';
 import { mintPropertyId } from '../../normalize/ids.js';
@@ -28,14 +28,15 @@ export async function searchAirbnb(env, query) {
     return [];
   }
 
-  const triage = await classifyPage(env, res.text);
-  if (triage.isBlockedOrCaptcha) {
-    await logScrape(env, PLATFORM, query.q, 'blocked', Date.now() - started);
+  const raw = extractListings(res.text);
+
+  if (!raw.length) {
+    const outcome = diagnoseEmptyResult(res);
+    await logScrape(env, PLATFORM, query.q, outcome, Date.now() - started);
     return [];
   }
 
-  const raw = extractListings(res.text);
-  await logScrape(env, PLATFORM, query.q, raw.length ? 'ok' : 'empty', Date.now() - started);
+  await logScrape(env, PLATFORM, query.q, 'ok', Date.now() - started);
 
   return raw.map(item => ({
     id: mintPropertyId(item.name, item.city),

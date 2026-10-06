@@ -23,8 +23,10 @@ GET /api/search/combined?q=...
   see scrapers/airbnb/extract.js)
         │
         ▼
-  each scraper: proxyFetch → Laya triage (valid page? blocked? language?)
-                → extract (JSON-LD first, HTML fallback second)
+  each scraper: proxyFetch → extract (JSON-LD first, HTML fallback second)
+                → got results? log 'ok', done.
+                → got nothing? classify/triage.js diagnoses WHY
+                  (blocked / empty / error) for scrape_log, nothing else
         │
         ▼
   normalize/dedupe.js — merge listings that minted the same id (name+city)
@@ -56,7 +58,7 @@ editing — a typo in a field name won't be caught until runtime.
 | Trip.com scraper | **Unverified** — the embedded-state variable name (`window.IBU_HOTEL`) is a best guess |
 | Airbnb scraper | **Unverified, off by default** (`ENABLE_AIRBNB = false` in `orchestrator.js`) — no JSON-LD, no stable public structure to extract from; rewrite against a real captured response before enabling |
 | Proxy layer (`proxy/credentials.js`) | **Mock** (`PROXY_MODE=mock` in `wrangler.toml`) — direct, unproxied requests. Will get blocked fast against the real sites; see the TODO in that file for the x402 purchase flow once a wallet exists |
-| Laya classification | **Heuristic fallback** — `LAYA_ENDPOINT` is empty by default, so `classify/laya.js` uses a crude keyword check instead of the real model. Point `LAYA_ENDPOINT` at wherever Laya ends up hosted |
+| Triage (`classify/triage.js`) | Real, and permanent by design — rule-based fingerprint matching for known bot-wall providers (Cloudflare/PerimeterX/Akamai/DataDome), runs only when an extraction comes back empty. Deliberately NOT a learned classifier — see that file's header for why; a successful extraction is itself the validity proof, so there's nothing for a model to add on the success path |
 | Auth (signup/login) | Real — PBKDF2 password hashing, real D1-backed accounts |
 | Subscription tier enforcement | Partial — enforced by email passed in an `X-User-Email` header, which is **not a real session token**. Anyone can pass anyone's email right now. Fine for solo prototyping, not for real users — needs a real bearer-token session before this is trustworthy |
 | x402 public developer API | Not built — deferred per the earlier planning discussion |
