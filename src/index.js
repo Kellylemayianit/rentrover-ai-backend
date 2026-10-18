@@ -7,6 +7,8 @@ import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { searchRoute } from './routes/search.js';
 import { authRoute } from './routes/auth.js';
+import { debugRoute } from './routes/debug.js';
+import { inspectRoute } from './routes/inspect.js';
 
 const app = new Hono();
 
@@ -14,7 +16,7 @@ const app = new Hono();
 // README: "the backend must allow requests from wherever this frontend is
 // served"). Tighten `origin` to the real deployed frontend domain before
 // this goes further than local development.
-app.use('*', cors({ origin: '*', allowHeaders: ['Content-Type', 'X-User-Email'] }));
+app.use('*', cors({ origin: '*', allowHeaders: ['Content-Type', 'X-User-Email', 'X-Debug-Key'] }));
 
 app.get('/health', (c) => c.json({
   status: 'healthy',
@@ -24,6 +26,8 @@ app.get('/health', (c) => c.json({
 
 app.route('/api/search', searchRoute);
 app.route('/api/auth', authRoute);
+app.route('/api/debug', debugRoute); // gated by X-Debug-Key — see routes/debug.js's header
+app.route('/api/debug', inspectRoute);
 
 app.notFound((c) => c.json({ error: 'Not found' }, 404));
 app.onError((err, c) => {

@@ -18,6 +18,7 @@ binding = "AI"
 # Toggles the whole proxy layer between the mock and the real x402 client —
 # see src/proxy/credentials.js. Flip to "real" once a funded wallet exists.
 PROXY_MODE = "mock"
+DEBUG_KEY = "f233844bc57a10578180015e5eaceeb6"
 
 # How long a property record is trusted before the next request re-scrapes
 # it instead of serving the cached row.
